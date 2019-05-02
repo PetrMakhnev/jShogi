@@ -16,25 +16,16 @@
 
 <body>
 
-    <?php
-        include 'header.php';
-    ?>
+    <section>
 
-        <section>
-
-            <div class="container"></div>           
-            <div class="information"></div>
-           
-        </section>
-
-    <?php
-        include 'footer.php';
-    ?>
+        <div class="container"></div>           
+        <div class="information"></div>
+        
+    </section>
 
 </body>
 
     <script src="js/jquery-3.3.1.js"></script>
-    <script src="js/jquery-ui.min.js"></script>
     <script src="js/jShogi.js"></script>
     <script src="js/script.js"></script>
     <!--[if lt IE 9]>
