@@ -97,7 +97,7 @@
 
         var load_jPSN = () => {
             let shogiProblem = read_jPSN(openFile(settings['jPSN']));
-           
+            
             // let movesAndHighlight = movesInSfen(shogiProblem[0], settings["startPosition"]);
             // settings["moves"] = shogiProblem[0];
             // settings["sfens"] = movesAndHighlight[0];
@@ -118,6 +118,7 @@
                 position : null,
 
                 moves : null,
+                comment : null,
 
                 result : null
             }
@@ -144,15 +145,26 @@
 
             }
 			
-            jPSNobject.moves = jPSNobject.moves.map(element => {
-                var element = element.split(" ");
-                return element;
-            });
+            jPSNobject.moves = jPSNobject.moves.map(element => element.split(" "));
 
+            jPSNobject.comment = jPSNobject.moves.map( element => element[1]);
+            jPSNobject.moves = jPSNobject.moves.map( element => element[0]);
+            
+            
+			console.log("TCL: read_jPSN -> jPSNobject", jPSNobject)
         }
 
+        
+        var convertJPSN = (moves) => {
+            if (Array.isArray(moves)){
+                moves.forEach(element => {
+                    
+                });
+            }
+            else{
 
-
+            }
+        }
 
         var initSettingsStyles = (styleNumber) => {
             
