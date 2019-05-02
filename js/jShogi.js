@@ -158,7 +158,7 @@
         var convertJPSN = (moves) => {
             if (Array.isArray(moves)){
                 moves.forEach(element => {
-                    
+
                 });
             }
             else{
@@ -1222,10 +1222,7 @@
                     var colorNow = true;    // true — черные, false — белые
 
                     if (color_ == "white"){
-                        possibleShiftMove = possibleShiftMove.map(function(item){
-                            return item * -1; 
-                        });
-
+                        possibleShiftMove = possibleShiftMove.map(item => item * -1)
                         colorNow = false;
                     }
 
@@ -1259,62 +1256,26 @@
                         }
                     }
 
-                    possibleShiftMove.forEach(function(item) {                
-
-                        if (field + item < 81 && field + item >= 0){
-
-                            if (colorNow && !isNumeric(sfen_array[field + item]))
-                                var checkedField = sfen_array[field + item].toUpperCase();
-                            else if (!colorNow && !isNumeric(sfen_array[field + item]))
-                                var checkedField = sfen_array[field + item].toLowerCase();
-
-                            if (sfen_array[field + item] == 0 || isNumeric(sfen_array[field + item]))
-                                allowedFields.push(field + item);
-                            else if (sfen_array[field + item] != checkedField)
-                                allowedFields.push(field + item);
-                            
-                        }
-
-                    });
-
+                    possibleShiftMove.forEach(item => addToAllowedFields(item, checkedField))
+                   
                     return allowedFields;
-
-                    break;
 
                 case "P":
                     var possibleShiftMove = [-9];
                     var colorNow = true;
 
                     if (color_ == "white"){
-                        possibleShiftMove = possibleShiftMove.map(function(item){
-                            return item * -1;
-                        });
-
+                        possibleShiftMove = possibleShiftMove.map(item => item * -1)
                         colorNow = false;
                     }
 
-                    possibleShiftMove.forEach(function(item) {                
-
-                        if (field + item < 81 && field + item >= 0){
-
-                            if (colorNow && !isNumeric(sfen_array[field + item]))
-                                var checkedField = sfen_array[field + item].toUpperCase();
-                            else if (!colorNow && !isNumeric(sfen_array[field + item]))
-                                var checkedField = sfen_array[field + item].toLowerCase();
-
-                            if (sfen_array[field + item] == 0 || isNumeric(sfen_array[field + item]))
-                                allowedFields.push(field + item);
-                            else if (sfen_array[field + item] != checkedField)
-                                allowedFields.push(field + item);
-                            
-                        }
-
+                    possibleShiftMove.forEach(function(item) {
+                        addToAllowedFields(item, checkedField);
                     });
 
 
                     return allowedFields;
 
-                    break;
                 
                 case "G":
                 case "+S":
@@ -1325,10 +1286,7 @@
                     var colorNow = true;
 
                     if (color_ == "white"){
-                        possibleShiftMove = possibleShiftMove.map(function(item){
-                            return item * -1; // [10, 9, 8, 1, -1, -9]
-                        });
-
+                        possibleShiftMove = possibleShiftMove.map(item => item * -1)
                         colorNow = false;
                     }
                     
@@ -1359,27 +1317,9 @@
 
                     }
 
-                    possibleShiftMove.forEach(function(item) {                
-
-                        if (field + item < 81 && field + item >= 0){
-
-                            if (colorNow && !isNumeric(sfen_array[field + item]))
-                                var checkedField = sfen_array[field + item].toUpperCase();
-                            else if (!colorNow && !isNumeric(sfen_array[field + item]))
-                                var checkedField = sfen_array[field + item].toLowerCase();
-
-                            if (sfen_array[field + item] == 0 || isNumeric(sfen_array[field + item]))
-                                allowedFields.push(field + item);
-                            else if (sfen_array[field + item] != checkedField)
-                                allowedFields.push(field + item);
-                            
-                        }
-
-                    });
+                    possibleShiftMove.forEach(item => addToAllowedFields(item, checkedField))
 
                     return allowedFields;
-
-                    break;
 
                 case "S":
 
@@ -1387,10 +1327,7 @@
                     var colorNow = true;
 
                     if (color_ == "white"){
-                        possibleShiftMove = possibleShiftMove.map(function(item){
-                            return item * -1;
-                        });
-
+                        possibleShiftMove = possibleShiftMove.map(item => item * -1)
                         colorNow = false;
                     }
 
@@ -1419,27 +1356,9 @@
                         }
                     }
 
-                    possibleShiftMove.forEach(function(item) {                
-
-                        if (field + item < 81 && field + item >= 0){
-
-                            if (colorNow && !isNumeric(sfen_array[field + item]))
-                                var checkedField = sfen_array[field + item].toUpperCase();
-                            else if (!colorNow && !isNumeric(sfen_array[field + item]))
-                                var checkedField = sfen_array[field + item].toLowerCase();
-
-                            if (sfen_array[field + item] == 0 || isNumeric(sfen_array[field + item]))
-                                allowedFields.push(field + item);
-                            else if (sfen_array[field + item] != checkedField)
-                                allowedFields.push(field + item);
-                            
-                        }
-
-                    });
+                    possibleShiftMove.forEach(item => addToAllowedFields(item, checkedField))
 
                     return allowedFields;
-
-                    break;
 
                 case "N":
 
@@ -1447,10 +1366,7 @@
                     var colorNow = true;
 
                     if (color_ == "white"){
-                        possibleShiftMove = possibleShiftMove.map(function(item){
-                            return item * -1;
-                        });
-
+                        possibleShiftMove = possibleShiftMove.map(item => item * -1)
                         colorNow = false;
                     }
 
@@ -1477,25 +1393,9 @@
 
                     }
 
-                    possibleShiftMove.forEach(function(item) {                
-
-                        if (field + item < 81 && field + item >= 0){
-
-                            if (colorNow && !isNumeric(sfen_array[field + item]))
-                                var checkedField = sfen_array[field + item].toUpperCase();
-                            else if (!colorNow && !isNumeric(sfen_array[field + item]))
-                                var checkedField = sfen_array[field + item].toLowerCase();
-
-                            if (sfen_array[field + item] == 0 || isNumeric(sfen_array[field + item]))
-                                allowedFields.push(field + item);
-                            else if (sfen_array[field + item] != checkedField)
-                                allowedFields.push(field + item); 
-                        }
-                    });
+                    possibleShiftMove.forEach(item => addToAllowedFields(item, checkedField))
 
                     return allowedFields;
-
-                    break;
 
                 case "L":
 
@@ -1503,10 +1403,7 @@
                     var colorNow = true;
 
                     if (color_ == "white"){
-                        possibleShiftMove = possibleShiftMove.map(function(item){
-                            return item * -1;
-                        });
-
+                        possibleShiftMove = possibleShiftMove.map(item => item * -1)
                         colorNow = false;
                     }  
                     
@@ -1537,11 +1434,9 @@
                     var possibleShiftMove = [-9, 9, 1, -1];
                     var colorNow = true;
 
-                    if (color_ == "white"){
+                    if (color_ == "white")
                         colorNow = false;
-                    }
-                        
-
+                    
                     if (colorNow){
 
                         if ((field + 1) % 9 == 0){
@@ -1604,14 +1499,13 @@
 
                     return allowedFields;
 
-                    break;
-
                 case "+R":
 
                     var possibleShiftMove = [-9, 9, 1, -1, -8, -10, 8, 10];
                     var colorNow = true;
 
-                    if (color_ == "white") colorNow = false;
+                    if (color_ == "white") 
+                        colorNow = false;
                 
                     var sep = 4;
 
@@ -1693,23 +1587,9 @@
                                 }
                             }
                         }
-                        else{
-                            let item = item_;
-                            if (field + item < 81 && field + item >= 0){
-
-                                if (colorNow && !isNumeric(sfen_array[field + item]))
-                                    var checkedField = sfen_array[field + item].toUpperCase();
-                                else if (!colorNow && !isNumeric(sfen_array[field + item]))
-                                    var checkedField = sfen_array[field + item].toLowerCase();
-            
-                                if (sfen_array[field + item] == 0 || isNumeric(sfen_array[field + item]))
-                                    allowedFields.push(field + item);
-                                else if (sfen_array[field + item] != checkedField)
-                                    allowedFields.push(field + item);
-                                
-                            }
-                        }
-
+                        else
+                            addToAllowedFields(item_, checkedField);
+                        
                     });
 
                     return allowedFields;
@@ -1719,7 +1599,8 @@
                     var possibleShiftMove = [-10, -8, 8, 10];
                     var colorNow = true;
 
-                    if (color_ == "white") colorNow = false;
+                    if (color_ == "white") 
+                        colorNow = false;
                 
                     if (colorNow){
 
@@ -1756,8 +1637,6 @@
                             
                             if (field + item < 81 && field + item >= 0){
 
-
-                        
                                 if (item_ == 8)
                                     if ((field + item + 1) % 9 == 0)
                                         break;
@@ -1797,8 +1676,6 @@
                         
                     });
                     return allowedFields;
-
-                    break;
 
                 case "+B":
 
@@ -1884,7 +1761,6 @@
                                     if (sfen_array[field + item] == 0 || isNumeric(sfen_array[field + item]))
                                         allowedFields.push(field + item);
                                     else if (sfen_array[field + item] != checkedField){
-                                    
                                         allowedFields.push(field + item);
                                         break;
                                     }
@@ -1897,30 +1773,27 @@
                             }
                         
                         }
-                        else{
-                            let item = item_;
-                            if (field + item < 81 && field + item >= 0){
-
-                                if (colorNow && !isNumeric(sfen_array[field + item]))
-                                    var checkedField = sfen_array[field + item].toUpperCase();
-                                else if (!colorNow && !isNumeric(sfen_array[field + item]))
-                                    var checkedField = sfen_array[field + item].toLowerCase();
-
-                                if (sfen_array[field + item] == 0 || isNumeric(sfen_array[field + item]))
-                                    allowedFields.push(field + item);
-                                else if (sfen_array[field + item] != checkedField)
-                                    allowedFields.push(field + item);
-                                
-                            }
-                        }
+                        else
+                            addToAllowedFields(item_, checkedField);
+                           
                     });
-
 
                     return allowedFields;
 
-                    break;
-
                 default: break;
+            }
+
+            var addToAllowedFields = (item, checkedField) => {
+                if (field + item < 81 && field + item >= 0){
+                    if (colorNow && !isNumeric(sfen_array[field + item]))
+                        var checkedField = sfen_array[field + item].toUpperCase();
+                    else if (!colorNow && !isNumeric(sfen_array[field + item]))
+                        var checkedField = sfen_array[field + item].toLowerCase();
+                    if (sfen_array[field + item] == 0 || isNumeric(sfen_array[field + item]))
+                        allowedFields.push(field + item);
+                    else if (sfen_array[field + item] != checkedField)
+                        allowedFields.push(field + item);
+                }
             }
         }
 
