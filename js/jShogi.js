@@ -97,11 +97,15 @@
 
         var load_jPSN = () => {
             let shogiProblem = read_jPSN(openFile(settings['jPSN']));
+			console.log("TCL: load_jPSN -> shogiProblem", shogiProblem)
             
-            // let movesAndHighlight = movesInSfen(shogiProblem[0], settings["startPosition"]);
-            // settings["moves"] = shogiProblem[0];
-            // settings["sfens"] = movesAndHighlight[0];
-            // settings["highlightedField"] = movesAndHighlight[1];
+            let movesAndHighlight = movesInSfen(shogiProblem, settings["startPosition"]);
+			
+            settings["moves"] = shogiProblem;
+            settings["sfens"] = movesAndHighlight[0];
+            settings["highlightedField"] = movesAndHighlight[1];
+            
+            setPosition(settings["sfens"][settings['nowMove']]);
         }
 
         var read_jPSN = (text) => {
@@ -146,13 +150,98 @@
             }
 			
             jPSNobject.moves = jPSNobject.moves.map(element => element.split(" "));
-
             jPSNobject.comment = jPSNobject.moves.map( element => element[1]);
             jPSNobject.moves = jPSNobject.moves.map( element => element[0]);
             
-            
-			console.log("TCL: read_jPSN -> jPSNobject", jPSNobject)
+            var jPSNMoves = moveToReq(jPSNobject.moves);
+
+             console.log("TCL: read_jPSN -> jPSNobject", jPSNobject)
+
+            return jPSNMoves;
+		           
         }
+
+
+        
+
+        var moveToReq = (moves) => {
+        
+            var newMoves = [];
+
+            moves.forEach(move => {
+
+                let piece = {
+                    type : null,
+                    isPromote : false,
+                    from : null,
+                    to : null
+                }
+
+                if (move[0] == "+") piece.isPromote = true;
+
+                if (move[1] == "*"){
+                    piece.type = move[0].toUpperCase();
+                    piece.from = '00';
+                    piece.to = numSymbolToNumNum(move.slice(2, 4));
+                    
+                    newMoves.push(`${piece.type}_${piece.from}_${piece.to}_D`)
+                } 
+
+                if (piece.isPromote){
+                    if (move[4] == "-"){
+                        piece.type = move[0].toUpperCase();
+                        piece.from = numSymbolToNumNum(move.slice(2, 4));
+                        piece.to = numSymbolToNumNum(move.slice(5, 7));
+
+                        newMoves.push(`${piece.type}_${piece.from}_${piece.to}_N`)
+                    }
+
+                    if (move[4] == "x"){
+                        piece.type = move[0].toUpperCase();
+                        piece.from = numSymbolToNumNum(move.slice(2, 4));
+                        piece.to = numSymbolToNumNum(move.slice(5, 7));
+
+                        newMoves.push(`${piece.type}_${piece.from}_${piece.to}_N_B`)
+                    }
+                }
+                else{
+                    if (move[3] == "-"){
+                        piece.type = move[0].toUpperCase();
+                        piece.from = numSymbolToNumNum(move.slice(1, 3));
+                        piece.to = numSymbolToNumNum(move.slice(4, 6));
+
+                        newMoves.push(`${piece.type}_${piece.from}_${piece.to}_N`)
+                    }
+
+                    if (move[3] == "x"){
+                        piece.type = move[0].toUpperCase();
+                        piece.from = numSymbolToNumNum(move.slice(1, 3));
+                        piece.to = numSymbolToNumNum(move.slice(4, 6));
+
+                        newMoves.push(`${piece.type}_${piece.from}_${piece.to}_N_B`)
+                    }
+                }
+
+            });
+
+            return newMoves;            
+        }
+        var numSymbolToNumNum = (numSymbol) => {
+            switch (numSymbol[1]) {
+                case "a": return numSymbol[0] + "1"; break;
+                case "b": return numSymbol[0] + "2"; break;
+                case "c": return numSymbol[0] + "3"; break;
+                case "d": return numSymbol[0] + "4"; break;
+                case "e": return numSymbol[0] + "5"; break;
+                case "f": return numSymbol[0] + "6"; break;
+                case "g": return numSymbol[0] + "7"; break;
+                case "h": return numSymbol[0] + "8"; break;
+                case "i": return numSymbol[0] + "9"; break;                
+                default: break;
+            }
+        }
+
+
 
         
         var convertJPSN = (moves) => {
@@ -1191,6 +1280,23 @@
             onMove(settings);
         }
 
+
+
+
+        
+        var addToAllowedFields = (allowedFields, field, colorNow, sfen_array, item, checkedField) => {
+            if (field + item < 81 && field + item >= 0){
+                if (colorNow && !isNumeric(sfen_array[field + item]))
+                    var checkedField = sfen_array[field + item].toUpperCase();
+                else if (!colorNow && !isNumeric(sfen_array[field + item]))
+                    var checkedField = sfen_array[field + item].toLowerCase();
+                if (sfen_array[field + item] == 0 || isNumeric(sfen_array[field + item]))
+                    allowedFields.push(field + item);
+                else if (sfen_array[field + item] != checkedField)
+                    allowedFields.push(field + item);
+            }
+        }
+
         /**
          * Возвращает массив возможных полей для хода
          *
@@ -1256,7 +1362,7 @@
                         }
                     }
 
-                    possibleShiftMove.forEach(item => addToAllowedFields(item, checkedField))
+                    possibleShiftMove.forEach(item => addToAllowedFields(allowedFields, field, colorNow, sfen_array, item, checkedField))
                    
                     return allowedFields;
 
@@ -1269,9 +1375,8 @@
                         colorNow = false;
                     }
 
-                    possibleShiftMove.forEach(function(item) {
-                        addToAllowedFields(item, checkedField);
-                    });
+                    possibleShiftMove.forEach(item => addToAllowedFields(allowedFields, field, colorNow, sfen_array, item, checkedField))
+
 
 
                     return allowedFields;
@@ -1317,7 +1422,7 @@
 
                     }
 
-                    possibleShiftMove.forEach(item => addToAllowedFields(item, checkedField))
+                    possibleShiftMove.forEach(item => addToAllowedFields(allowedFields, field, colorNow, sfen_array, item, checkedField))
 
                     return allowedFields;
 
@@ -1356,7 +1461,7 @@
                         }
                     }
 
-                    possibleShiftMove.forEach(item => addToAllowedFields(item, checkedField))
+                    possibleShiftMove.forEach(item => addToAllowedFields(allowedFields, field, colorNow, sfen_array, item, checkedField))
 
                     return allowedFields;
 
@@ -1393,7 +1498,7 @@
 
                     }
 
-                    possibleShiftMove.forEach(item => addToAllowedFields(item, checkedField))
+                    possibleShiftMove.forEach(item => addToAllowedFields(allowedFields, field, colorNow, sfen_array, item, checkedField))
 
                     return allowedFields;
 
@@ -1783,19 +1888,9 @@
                 default: break;
             }
 
-            var addToAllowedFields = (item, checkedField) => {
-                if (field + item < 81 && field + item >= 0){
-                    if (colorNow && !isNumeric(sfen_array[field + item]))
-                        var checkedField = sfen_array[field + item].toUpperCase();
-                    else if (!colorNow && !isNumeric(sfen_array[field + item]))
-                        var checkedField = sfen_array[field + item].toLowerCase();
-                    if (sfen_array[field + item] == 0 || isNumeric(sfen_array[field + item]))
-                        allowedFields.push(field + item);
-                    else if (sfen_array[field + item] != checkedField)
-                        allowedFields.push(field + item);
-                }
-            }
         }
+
+
 
         /**
          * Возвращает массив позиций для всех ходов
@@ -1804,7 +1899,7 @@
          *  $1 — фигура, которая ходит (превращенная фигура обозначается как (фигура)+ ), 
          *  $2 — откуда, 
          *  $3 — куда, 
-         *  $4 —  тип хода (N – обычный ход, D – сбрасывание, P – превращение)
+         *  $4 — тип хода (N – обычный ход, D – сбрасывание, P – превращение)
          *  $5 – флаг, если фигура этим ходом съедает фигуру
          * @param startPosition_ Стартовая позиция.
          */
@@ -1832,7 +1927,7 @@
         }
 
         /**
-         * Преобразует текущий SFEN в сооствествии с переданным ходом
+         * Преобразует текущий SFEN в соотвествии с переданным ходом
          *
          * @param sfen Позиция в формате SFEN.
          * @param move Текущий ход.
