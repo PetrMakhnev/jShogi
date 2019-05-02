@@ -54,8 +54,8 @@
                     'nowMove'           : 0,
                     'startMove'         : null,
 
-                    'KIF'               : null
-
+                    'KIF'               : null,
+                    'jPSN'              : null
 
                 }, options);
 
@@ -66,6 +66,7 @@
                 addInterface();
                 
                 let sfenAndHighlightField = movesInSfen(settings["moves"], settings["startPosition"]);
+				
                 settings["sfens"] = sfenAndHighlightField[0];
                 settings["highlightedField"] = sfenAndHighlightField[1];
                 
@@ -73,6 +74,9 @@
 
                 if (settings['KIF'] != null)
                     loadKIF();
+
+                if (settings['jPSN'] != null)
+                    load_jPSN();
             }
         };  
 
@@ -90,6 +94,65 @@
             } 
 
         };
+
+        var load_jPSN = () => {
+            let shogiProblem = read_jPSN(openFile(settings['jPSN']));
+           
+            // let movesAndHighlight = movesInSfen(shogiProblem[0], settings["startPosition"]);
+            // settings["moves"] = shogiProblem[0];
+            // settings["sfens"] = movesAndHighlight[0];
+            // settings["highlightedField"] = movesAndHighlight[1];
+        }
+
+        var read_jPSN = (text) => {
+            let jPSNobject = {
+                type : null,
+                bookJP : null,
+                bookEN : null,
+
+                authorJP : null,
+                authorEN : null,
+
+                countMoves : null,
+
+                position : null,
+
+                moves : null,
+
+                result : null
+            }
+
+            text = text.replace(/[\r\n|\r|\n]/g, "").split("@");
+            text.splice(0, 1);
+
+            for (let i = 0; i < text.length; i++){
+                text[i] = text[i].split(":");
+
+                switch (text[i][0]) {
+                    case "tsume": jPSNobject.type = 1; break;
+                    case "book-jp": jPSNobject.bookJP = text[i][1]; break;
+                    case "book-en": jPSNobject.bookEN = text[i][1]; break;
+                    case "author-jp": jPSNobject.authorJP = text[i][1]; break;
+                    case "author-en": jPSNobject.authorEN = text[i][1]; break;
+                    case "countMoves": jPSNobject.countMoves = text[i][1]; break;
+                    case "position": jPSNobject.position = text[i][1]; break;
+                    case "moves": jPSNobject.moves = text[i][1].replace(/[0-9]. /, "").split(/[0-9]\. /); break;
+                    case "result": jPSNobject.result = text[i][1]; break;
+
+                    default:break;
+                }
+
+            }
+			
+            jPSNobject.moves = jPSNobject.moves.map(element => {
+                var element = element.split(" ");
+                return element;
+            });
+
+        }
+
+
+
 
         var initSettingsStyles = (styleNumber) => {
             
@@ -2395,6 +2458,9 @@
             });
             return information;
         }
+
+
+
 
     });
 }) (jQuery)
