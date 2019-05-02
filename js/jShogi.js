@@ -1,3 +1,8 @@
+/**
+ * @author Petr Makhnev <mr.makhneff@gmail.com>
+ * @version 0.0.3
+ */
+
 (function ( $ ){
     $(function() {
         "use strict";
@@ -41,12 +46,14 @@
                     'widthKifuBlock'    : null,
                     'heightKifuBlock'   : null,
 
+                    'colorHighlightFields' : "#FDD",
+
                     'changeable'        : true,
                     'sfens'             : [],
                     'moves'             : [],
                     'highlightedField'  : [],
                     'nowMove'           : 0,
-
+                    'startMove'         : null,
 
                     'KIF'               : null
 
@@ -91,16 +98,24 @@
                 addBoard($this);
                 addInterface();
 
-                if (settings['KIF'] != null)
-                settings['moves'] = readKIF(openFile(settings['KIF']));
+                if (settings['KIF'] != null){
+                    settings['moves'] = readKIF(openFile(settings['KIF']));
+                    
+                    if (settings['startMove'] != null) {
+                        if (settings['startMove'] <= settings['moves'].length) 
+                            settings['nowMove'] = settings['startMove'];
+                        else
+                            alert(`Номер хода указан неверно, установлена стартовая позиция!\nВсего ходов: ${settings['moves'].length}`);
+                    }
+                }
             
             
-                var sfenAndHightlightField = movesInSfen(settings["moves"], settings["startPosition"]);
+                var sfenAndHighlightField = movesInSfen(settings["moves"], settings["startPosition"]);
 
-                settings["sfens"] = sfenAndHightlightField[0];
-                settings["highlightedField"] = sfenAndHightlightField[1];
+                settings["sfens"] = sfenAndHighlightField[0];
+                settings["highlightedField"] = sfenAndHighlightField[1];
                 
-                setPosition(settings["startPosition"]);
+                setPosition(settings["sfens"][settings['nowMove']]);
                 showAllMoves(settings);
 
             }
@@ -200,7 +215,7 @@
                 if (settings["nowMove"] < settings["sfens"].length - 1){
                     settings["nowMove"]++
                     setPosition(settings["sfens"][settings["nowMove"]]); 
-                    highlightMove(settings["highlightedField"][settings["nowMove"] - 1]);  
+                    highlightFileds(settings["highlightedField"][settings["nowMove"] - 1], 1);  
 
                     $(".move").css({"background-color":"#FFF"});
                     $(".move_" + settings["nowMove"]).css({"background-color":"#FDD"});
@@ -211,7 +226,7 @@
                 if (settings["nowMove"] > 0){
                     settings["nowMove"]--;
                     setPosition(settings["sfens"][settings["nowMove"]]); 
-                    highlightMove(settings["highlightedField"][settings["nowMove"] - 1]);  
+                    highlightFileds(settings["highlightedField"][settings["nowMove"] - 1], 1);
 
                     $(".move").css({"background-color":"#FFF"});
                     $(".move_" + settings["nowMove"]).css({"background-color":"#FDD"});
@@ -243,59 +258,45 @@
                 settings["nowMove"] = numberOfMove;
     
                 setPosition(nowPosition);
-                highlightMove(settings["highlightedField"][settings["nowMove"] - 1]); 
-    
+                highlightFileds(settings["highlightedField"][settings["nowMove"] - 1], 1);
                 
                 $(".move").css({"background-color":"#FFF"});
                 $("." + $this).css({"background-color":"#FDD"});
             });
         }
 
-        /**
-         * Функция для выделения текущей фигуры
-         *
-         * @param {field} field Поле на котором стоит фигура
-        */
-        var highlightPiece = (field) => $("#" + field).css({"background-color":"#FDD"});
-        
-        /**
-         * Функция копия для очистки выделения
-         *
-        */
-        var removeHighlightPiece = () => removeHighlightFields();
-        
-        /**
-         * Функция для выделения возможных ходов
-         *
-         * @param {allowedFields} allowedFields Массив возможных полей
-        */
-        var highlightFields = (allowedFields) => {
-            removeHighlightFields();
-            allowedFields.forEach(element => {
-                $("#" + element).css({"background-color":"#FDD"});
-            });
-        }
 
-        var highlightMove = (moveFields) => {
-			removeHighlightFields();
-            if (moveFields != undefined){
-                $("#" + moveFields[0]).css({"background-color":"#FDD"});
-                $("#" + moveFields[1]).css({"background-color":"#FDD"});
+        
+        /** 
+         * Подсветка полей
+         * 
+         * @param field Поле или массив полей
+         * @param flag Флаг предварительной очистки, 1 – предварительная очистка, 0 – отмена предварительной очистки
+        */
+        var highlightFileds = (field, flag) => {
+            if (flag)
+                removeHighlightFields();
+            
+            if (Array.isArray(field)){
+                field.forEach(element => {
+                    $("#" + element).css({"background-color": settings['colorHighlightFields']});
+                });
+            }
+            else{
+                $("#" + field).css({"background-color": settings['colorHighlightFields']});
             }
         }
-
-        /**
-         * Функция для сброса подсветки хода
-         *
-         */
         var removeHighlightFields = () => $("[class $= Field]").css({"background-color":"#FFF"});
 
 
-
-
-
-        var addMove = (settings, newMove, hightlight) => {
-            removeHighlightFields();
+        /**
+         * Добавление хода в массив ходов и добавление позиции в массив позиций
+         * 
+         * @param settings 
+         * @param newMove 
+         * @param highlight 
+         */ 
+        var addMove = (settings, newMove, highlight) => {
 
             let sfenNow = settings["sfens"][settings["nowMove"]];
 
@@ -308,11 +309,11 @@
                 settings["moves"].push(newMove);
                 settings["sfens"].push(newSfen);
                 
-                settings["highlightedField"].push([hightlight[0], hightlight[1]]);
-				 settings["nowMove"]++;
+                settings["highlightedField"].push([highlight[0], highlight[1]]);
+				settings["nowMove"]++;
 
                 setPosition(newSfen);
-                highlightPiece(hightlight[1]);
+                highlightFileds(highlight[1], 1);
             }
             else{
 
@@ -325,10 +326,10 @@
                 settings["moves"].push(newMove);
                 settings["sfens"].push(newSfen);
                 settings["nowMove"]++;
-                settings["highlightedField"].push([hightlight[0], hightlight[1]]);
+                settings["highlightedField"].push([highlight[0], highlight[1]]);
                 
                 setPosition(newSfen);
-                highlightPiece(hightlight[1]);
+                highlightFileds(highlight[1], 1);
             }
         }
 
@@ -428,9 +429,9 @@
                                 else
                                     newMove = $selectPiece.attr("class").split(" ")[2].replace("p", "+") + "_" + $selectPiece_Field.attr("id") + "_" + $selectPiece_Opponent_Field.attr("id") + "_N_B";
                                     
-                                let hightlightFields = [$selectPiece_Field.attr("id"), $selectPiece_Opponent_Field.attr("id")];
+                                let highlightFields = [$selectPiece_Field.attr("id"), $selectPiece_Opponent_Field.attr("id")];
                                 
-                                addMove(settings, newMove, hightlightFields);
+                                addMove(settings, newMove, highlightFields);
 
                             }
                         });
@@ -457,10 +458,8 @@
                         allowedFields = [...getAllowedFields(pieceSymbol, colorPieceFull, field_id, sfenNow)];
                         reverse_convertField(allowedFields);
                     
-                        highlightFields(allowedFields);
-                        highlightPiece(field_id);
-
-                    
+                        highlightFileds(allowedFields, 1);
+                        highlightFileds(field_id, 0);
                     }
                     else
                         removeHighlightFields();
@@ -469,7 +468,6 @@
 
             
                 $pieceInHand.click(function(){
-                    removeHighlightPiece();
 
                     selectPieceIs = false;
                     $selectPiece = null;
@@ -490,9 +488,9 @@
                             selectPieceHandIs = true;
                             $selectPiece = $piece;
                         }
-                        else{
+                        else
                             selectPieceHandIs = false;
-                        }
+                        
                     }
                     else{
                         
@@ -512,9 +510,9 @@
                                 selectPieceHandIs = true;
                                 $selectPiece = $piece;
                             }
-                            else{
+                            else
                                 selectPieceHandIs = false;
-                            }
+                            
                         }
                     }
 
@@ -526,11 +524,11 @@
                         allowedFields = [...getAllowedFields(pieceSymbol, colorPieceFull, -1, sfenNow)];
                         reverse_convertField(allowedFields);
                         
-                        highlightFields(allowedFields);
-                        highlightPiece($field.attr("id"));
+                        highlightFileds(allowedFields, 1);
+                        highlightFileds($field.attr("id"), 0);
                     } 
                     else
-                        removeHighlightPiece();
+                        removeHighlightFields();
                 });
         
 
@@ -566,9 +564,9 @@
                                     $selectField.empty().append($selectPiece);
 
 
-                                    let hightlightsField = [$selectPiece_Field.attr("id"), $selectField.attr("id")];
+                                    let highlightsField = [$selectPiece_Field.attr("id"), $selectField.attr("id")];
                                 
-                                    addMove(settings, newMove, hightlightsField);
+                                    addMove(settings, newMove, highlightsField);
 
                                     
 
@@ -599,14 +597,13 @@
 
                                     let newMove = $selectPiece.attr("class").split(" ")[2].replace("p", "+") + "_" + "00" + "_" + $selectField.attr("id") + "_D";
                     
-                                    let hightlightFields = [null, $selectField.attr("id")];
+                                    let highlightFields = [null, $selectField.attr("id")];
 
-                                    addMove(settings, newMove, hightlightFields);
+                                    addMove(settings, newMove, highlightFields);
                                 }
                             });
 
-                            removeHighlightFields();
-                            highlightPiece($selectField.attr("id"));
+                            highlightFileds($selectField.attr("id"), 1);
                             
                             selectPieceIs = false;
                             selectPieceHandIs = false;
@@ -809,10 +806,10 @@
         /**
          * Функция проверяет возможно ли на этом ходу превращение фигуры 
          *
-         * @param {piece} piece Фигура которая ходит
-         * @param {color} color Цвет фигуры которая ходит
-         * @param {field_from} field_from Поле откуда
-         * @param {field_to} field_to Поле куда идет фигура
+         * @param piece Фигура которая ходит
+         * @param color Цвет фигуры которая ходит
+         * @param field_from Поле откуда
+         * @param field_to Поле куда идет фигура
         */
         var checkPromote = (piece, color, field_from, field_to) => {
             if (piece[0] == "p") return false;
@@ -1048,11 +1045,12 @@
         /**
          * Устанавливает позицию по переданому SFEN
          *
-         * @param {sfen} sfen Позиция в формате SFEN.
+         * @param sfen Позиция в формате SFEN.
          */
         var setPosition = (sfen) => {
 
             showAllMoves(settings);
+            highlightFileds(settings["highlightedField"][settings["nowMove"] - 1], 1);
 
             for (let i = 0, j = 0, field = 0; i < 10; i++){
 
@@ -1137,6 +1135,8 @@
                 }
             }
 
+            
+
             addPiecesCSS();
             onMove(settings);
         }
@@ -1144,10 +1144,10 @@
         /**
          * Возвращает массив возможных полей для хода
          *
-         * @param {piece} piece_ Фигура, для которой осуществляется поиск.
-         * @param {color_} color_ Цвет данной фигуры.
-         * @param {field_} field_ Поле, на котором стоит эта фигура.
-         * @param {sfen_} sfen_ Текущий SFEN партии.
+         * @param piece_ Фигура, для которой осуществляется поиск.
+         * @param color_ Цвет данной фигуры.
+         * @param field_ Поле, на котором стоит эта фигура.
+         * @param sfen_ Текущий SFEN партии.
          * @return {allowedFields} allowedFields Возможные поля для хода.
         */
         function getAllowedFields(piece_, color_, field_, sfen_){
@@ -1878,23 +1878,23 @@
         /**
          * Возвращает массив позиций для всех ходов
          *
-         * @param {moves_} moves_ Массив ходов в формате ($1_$2_$3_$4).
+         * @param moves_ Массив ходов в формате ($1_$2_$3_$4).
          *  $1 — фигура, которая ходит (превращенная фигура обозначается как (фигура)+ ), 
          *  $2 — откуда, 
          *  $3 — куда, 
          *  $4 —  тип хода (N – обычный ход, D – сбрасывание, P – превращение)
-         * @param {startPosition_} startPosition_ Стартовая позиция.
+         * @param startPosition_ Стартовая позиция.
          */
         function movesInSfen(moves_, startPosition_){
             var sfens = [];
             var sfen = startPosition_;
             
-            var hightlightedFields = [];
+            var highlightedFields = [];
 
             if (moves_.length == 0){
                 sfens.push(startPosition_);
-                hightlightedFields = [];
-                return [sfens, hightlightedFields];
+                highlightedFields = [];
+                return [sfens, highlightedFields];
             }
 
             sfens.push(startPosition_);
@@ -1902,21 +1902,21 @@
                 sfen = makeMove(sfen, element);
                 sfens.push(sfen);
 
-                hightlightedFields.push([element.split("_")[1], element.split("_")[2]]);
+                highlightedFields.push([element.split("_")[1], element.split("_")[2]]);
             });  
             
 			
             
           
 
-            return [sfens, hightlightedFields];
+            return [sfens, highlightedFields];
         }
 
         /**
          * Преобразует текущий SFEN в сооствествии с переданным ходом
          *
-         * @param {sfen} sfen Позиция в формате SFEN.
-         * @param {move} move Текущий ход.
+         * @param sfen Позиция в формате SFEN.
+         * @param move Текущий ход.
          * @return {new_sfen} new_sfen Новый SFEN.
          */
         var makeMove = (sfen, move) => NFARF_TO_SFEN( UPDATE_SFEN(SFEN_TO_NFARF(sfen), move));
@@ -1924,7 +1924,7 @@
         /**
          * Преобразует SFEN в промежуточный формат NFARF (Not Fully Abbreviated Recording Form)
          *
-         * @param {sfen_} sfen_ Позиция в формате SFEN.
+         * @param sfen_ Позиция в формате SFEN.
          * @return {nfarf} nfarf Позиция в формате NFARF.
          */
         function SFEN_TO_NFARF(sfen_){ // Not Fully Abbreviated Recording Form
@@ -1957,7 +1957,7 @@
         /**
          * Преобразует NFARF (Not Fully Abbreviated Recording Form) в SFEN
          *
-         * @param {nfarf_} nfarf_ Позиция в формате NFARF.
+         * @param nfarf_ Позиция в формате NFARF.
          * @return {sfen} sfen Позиция в формате SFEN.
          */
         function NFARF_TO_SFEN(nfarf_) {
@@ -2009,8 +2009,8 @@
         /**
          * Преобразует переданный SFEN в соотвествии с переданным ходом
          *
-         * @param {sfen_} sfen_ Позиция в формате SFEN.
-         * @param {move_} move_ Текущий ход.
+         * @param sfen_ Позиция в формате SFEN.
+         * @param move_ Текущий ход.
          * @return {new_sfen} new_sfen Новая позиция в формате SFEN.
          */
         function UPDATE_SFEN(sfen_, move_) {
@@ -2129,7 +2129,7 @@
          * из координат одномерного массива (т.е верхний левый угол имеет координаты 00)
          * и преобразует в вид ID
          *
-         * @param {field} field Текущее поле.
+         * @param field Текущее поле.
          */
         var getFieldID = (field) => '#' + reverse_convertField(field);
         
@@ -2137,7 +2137,7 @@
          * Обратно преобразует координаты в формат позиции (т.е верхний левый угол имеет координаты 91)
          * из координат одномерного массива (т.е верхний левый угол имеет координаты 00)
          *
-         * @param {field} field Текущее поле или массив полей.
+         * @param field Текущее поле или массив полей.
          */
         var reverse_convertField = (field) => {
             if (Array.isArray(field))
@@ -2151,14 +2151,14 @@
          * Преобразует координаты заданные в формате позиции (т.е верхний левый угол имеет координаты 91)
          * в координаты одномерного массива (т.е верхний левый угол имеет координаты 00)
          *
-         * @param {field} field Текущее поле.
+         * @param field Текущее поле.
          */
         var convertField = (field) => ((field % 10) * 9) - Math.trunc(field / 10);
 
         /**
          * Проверяет переданное значение на число
          *
-         * @param {n} n Проверяемое значение.
+         * @param n Проверяемое значение.
          */
         var isNumeric = (n) => !isNaN(parseFloat(n)) && isFinite(n);
         
@@ -2171,7 +2171,7 @@
         /**
          * Преобразует KIF в массив ходов внутреннего представления
          *
-         * @param {KIF} KIF Преобразуемый файл.
+         * @param KIF Преобразуемый файл.
         */
         var readKIF = (KIF) => {
             
@@ -2340,7 +2340,7 @@
          * Вспомогательная функция для чтения KIF
          * Преобразует иероглифы в ходе в соотвествии с их значением
          *
-         * @param {kanji} kanji Преобразуемый иероглиф.
+         * @param kanji Преобразуемый иероглиф.
         */
         var kanjiToString = (kanji) => {
             switch (kanji) {
@@ -2390,7 +2390,7 @@
         /**
          * Функция открытия файла
          *
-         * @param {path} path Путь у файлу.
+         * @param path Путь у файлу.
          * @return {information} Возвращает данные из файла в виде строки.
         */
         var openFile = (path) => {
