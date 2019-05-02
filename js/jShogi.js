@@ -1198,7 +1198,7 @@
          * @param color_ Цвет данной фигуры.
          * @param field_ Поле, на котором стоит эта фигура.
          * @param sfen_ Текущий SFEN партии.
-         * @return {allowedFields} allowedFields Возможные поля для хода.
+         * @return allowedFields Возможные поля для хода.
         */
         function getAllowedFields(piece_, color_, field_, sfen_){
             var sfen = SFEN_TO_NFARF(sfen_);
@@ -1836,7 +1836,7 @@
          *
          * @param sfen Позиция в формате SFEN.
          * @param move Текущий ход.
-         * @return {new_sfen} new_sfen Новый SFEN.
+         * @return new_sfen Новый SFEN.
          */
         var makeMove = (sfen, move) => NFARF_TO_SFEN( UPDATE_SFEN(SFEN_TO_NFARF(sfen), move));
         
@@ -1844,7 +1844,7 @@
          * Преобразует SFEN в промежуточный формат NFARF (Not Fully Abbreviated Recording Form)
          *
          * @param sfen_ Позиция в формате SFEN.
-         * @return {nfarf} nfarf Позиция в формате NFARF.
+         * @return nfarf Позиция в формате NFARF.
          */
         function SFEN_TO_NFARF(sfen_){ // Not Fully Abbreviated Recording Form
             var nfarf = "";
@@ -1877,7 +1877,7 @@
          * Преобразует NFARF (Not Fully Abbreviated Recording Form) в SFEN
          *
          * @param nfarf_ Позиция в формате NFARF.
-         * @return {sfen} sfen Позиция в формате SFEN.
+         * @return sfen Позиция в формате SFEN.
          */
         function NFARF_TO_SFEN(nfarf_) {
             var sfen = "";
@@ -1930,7 +1930,7 @@
          *
          * @param sfen_ Позиция в формате SFEN.
          * @param move_ Текущий ход.
-         * @return {new_sfen} new_sfen Новая позиция в формате SFEN.
+         * @return new_sfen Новая позиция в формате SFEN.
          */
         function UPDATE_SFEN(sfen_, move_) {
 			
@@ -2327,7 +2327,7 @@
          * Функция открытия файла
          *
          * @param path Путь у файлу.
-         * @return {information} Возвращает данные из файла в виде строки.
+         * @return Возвращает данные из файла в виде строки.
         */
         var openFile = (path) => {
        
