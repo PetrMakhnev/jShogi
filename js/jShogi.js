@@ -12,7 +12,6 @@
 
                 var $this = this;
 
-
                 settings = $.extend( {
                     'startPosition'     : "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b -",
 
@@ -61,13 +60,46 @@
                 }, options);
 
                
+                initSettingsStyles(0);
+
+                addBoard($this);
+                addInterface();
                 
+                var sfenAndHighlightField = movesInSfen(settings["moves"], settings["startPosition"]);
+
+                settings["sfens"] = sfenAndHighlightField[0];
+                settings["highlightedField"] = sfenAndHighlightField[1];
+                
+                setPosition(settings["sfens"][settings['nowMove']]);
+                showAllMoves(settings);
+
+
+                if (settings['KIF'] != null)
+                    loadKIF();
+            }
+        };  
+
+
+        $.fn.kifu = function( method ) {
+
+            if ( methods[method] ) {
+                return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+            } 
+            else if ( typeof method === 'object' || ! method ) {
+                return methods.init.apply( this, arguments );
+            } 
+            else {
+                $.error( 'Метод с именем ' +  method + ' не существует для jQuery.kifu' );
+            } 
+
+        };
+
+        var initSettingsStyles = (styleNumber) => {
             
-			
-                // Настройка стилей 
+            if (styleNumber == 0){
+
                 settings["heightBoard"] = settings["widthBoard"];
 
-                
                 settings["widthCoordinateHorizontal"] = settings["widthBoard"];
                 settings["heightCoordinateHorizontal"] = 20;
 
@@ -91,55 +123,10 @@
 
                 settings["widthAllContainer"] = 2 * (settings["widthHand"] + settings["marginSideHand"]) + settings["widthBoardWithCoord"] + 2 * settings["boardBorderOuter"] + (settings["widthKifuBlock"] + 2);
                 settings["heightAllContainer"] = settings["heightBoardWithCoord"] + settings["heightCoordinateHorizontal"] + 2 * settings["boardBorderOuter"];
-
-
-               
-
-                addBoard($this);
-                addInterface();
-
-                if (settings['KIF'] != null){
-                    settings['moves'] = readKIF(openFile(settings['KIF']));
-                    
-                    if (settings['startMove'] != null) {
-                        if (settings['startMove'] <= settings['moves'].length) 
-                            settings['nowMove'] = settings['startMove'];
-                        else
-                            alert(`Номер хода указан неверно, установлена стартовая позиция!\nВсего ходов: ${settings['moves'].length}`);
-                    }
-                }
             
-            
-                var sfenAndHighlightField = movesInSfen(settings["moves"], settings["startPosition"]);
-
-                settings["sfens"] = sfenAndHighlightField[0];
-                settings["highlightedField"] = sfenAndHighlightField[1];
-                
-                setPosition(settings["sfens"][settings['nowMove']]);
-                showAllMoves(settings);
-
             }
-        };  
-
-
-        $.fn.kifu = function( method ) {
-
-            if ( methods[method] ) {
-                return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
-            } 
-            else if ( typeof method === 'object' || ! method ) {
-                return methods.init.apply( this, arguments );
-            } 
-            else {
-                $.error( 'Метод с именем ' +  method + ' не существует для jQuery.kifu' );
-            } 
-
-        };
-
-        // $.fn.readKIF = function( KIF ) {
-
-        // };
-
+        }
+       
         /**
          * Добавляет разметку интерфейса
          *
@@ -260,7 +247,7 @@
                 setPosition(nowPosition);
                 highlightFileds(settings["highlightedField"][settings["nowMove"] - 1], 1);
                 
-                $(".move").css({"background-color":"#FFF"});
+                $move.css({"background-color":"#FFF"});
                 $("." + $this).css({"background-color":"#FDD"});
             });
         }
@@ -296,7 +283,7 @@
          * @param newMove 
          * @param highlight 
          */ 
-        var addMove = (settings, newMove, highlight) => {
+        var addMoveAndSfen = (settings, newMove, highlight) => {
 
             let sfenNow = settings["sfens"][settings["nowMove"]];
 
@@ -431,7 +418,7 @@
                                     
                                 let highlightFields = [$selectPiece_Field.attr("id"), $selectPiece_Opponent_Field.attr("id")];
                                 
-                                addMove(settings, newMove, highlightFields);
+                                addMoveAndSfen(settings, newMove, highlightFields);
 
                             }
                         });
@@ -566,7 +553,7 @@
 
                                     let highlightsField = [$selectPiece_Field.attr("id"), $selectField.attr("id")];
                                 
-                                    addMove(settings, newMove, highlightsField);
+                                    addMoveAndSfen(settings, newMove, highlightsField);
 
                                     
 
@@ -599,7 +586,7 @@
                     
                                     let highlightFields = [null, $selectField.attr("id")];
 
-                                    addMove(settings, newMove, highlightFields);
+                                    addMoveAndSfen(settings, newMove, highlightFields);
                                 }
                             });
 
@@ -692,7 +679,7 @@
                     break;
             }
         }
-
+        
         var moveInKIF = (move, movePrev) => {
             if (movePrev == undefined)
                 movePrev = "";
@@ -2167,6 +2154,27 @@
 
         // РАБОТА С KIF // 
 
+        /**
+         * Загружает KIF и устанавливает первоначальную позицию
+         */
+        var loadKIF = () => {
+        
+            settings['moves'] = readKIF(openFile(settings['KIF']));
+            
+            let sfenAndHighlightField = movesInSfen(settings["moves"], settings["startPosition"]);
+
+            settings["sfens"] = sfenAndHighlightField[0];
+            settings["highlightedField"] = sfenAndHighlightField[1];
+        
+            if (settings['startMove'] != null) {
+                if (settings['startMove'] <= settings['moves'].length){ 
+                    settings['nowMove'] = settings['startMove'];
+                    setPosition(settings['sfens'][settings['nowMove']]);
+                }
+                else
+                    alert(`Номер хода указан неверно, установлена стартовая позиция!\nВсего ходов: ${settings['moves'].length}`);
+            }
+        }
 
         /**
          * Преобразует KIF в массив ходов внутреннего представления
@@ -2253,10 +2261,8 @@
                 }
             }
             
-           
-            
-
-            var moves = lines.slice(startLine + 1);
+        
+            let moves = lines.slice(startLine + 1);
 		
             let newMoves = [];
 
