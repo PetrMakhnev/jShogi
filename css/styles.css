@@ -1,0 +1,50 @@
+*{
+    font-family: "consolas";
+}
+body{
+    margin: 0;
+    padding: 0;
+}
+
+
+.kifu{
+   
+    border: 1px solid #000;
+
+    font: 400 18px "consolas";
+
+    overflow: auto;
+}
+
+
+.move {
+    padding: 5px;
+    display: block;
+}
+
+.move:hover{
+    cursor: pointer;
+}
+
+.container{
+    width: auto;
+    height: auto;
+    margin: 200px auto;
+}
+
+
+
+.information{
+    width: 200px;
+    height: 450px;
+    position: absolute;
+
+    top: 200px;
+    right: 100px;
+}
+
+.infoItem{
+    width: 100%;
+    
+    font: 400 18px "consolas";
+}
