@@ -65,14 +65,11 @@
                 addBoard($this);
                 addInterface();
                 
-                var sfenAndHighlightField = movesInSfen(settings["moves"], settings["startPosition"]);
-
+                let sfenAndHighlightField = movesInSfen(settings["moves"], settings["startPosition"]);
                 settings["sfens"] = sfenAndHighlightField[0];
                 settings["highlightedField"] = sfenAndHighlightField[1];
                 
                 setPosition(settings["sfens"][settings['nowMove']]);
-                showAllMoves(settings);
-
 
                 if (settings['KIF'] != null)
                     loadKIF();
@@ -258,7 +255,7 @@
          * Подсветка полей
          * 
          * @param field Поле или массив полей
-         * @param flag Флаг предварительной очистки, 1 – предварительная очистка, 0 – отмена предварительной очистки
+         * @param flag Флаг предварительной очистки, 1 – с предварительной очистка, 0 – без предварительной очистки
         */
         var highlightFileds = (field, flag) => {
             if (flag)
@@ -342,8 +339,9 @@
 
             var allowedFields;
 
-            if ( settings["changeable"]){
 
+            if ( settings["changeable"]){
+                
                 $pieceOnBoard.click(function(){
                     
                     let sfenNow = settings["sfens"][settings["nowMove"]];              
@@ -646,11 +644,8 @@
                                 return piece + fieldFrom + "x" + fieldTo;                        
                         }
                     }
-                    break;
 
-                case "D":
-                    return piece + "*" + fieldTo;
-                    break; 
+                case "D": return piece + "*" + fieldTo;
                     
                 case "P":
                     if (piece == "P"){
@@ -673,13 +668,11 @@
                                 return piece + fieldFrom + "x" + fieldTo + "+";
                         }
                     }
-                    break;
             
-                default:
-                    break;
+                default: break;
             }
         }
-        
+
         var moveInKIF = (move, movePrev) => {
             if (movePrev == undefined)
                 movePrev = "";
@@ -701,11 +694,9 @@
                         else
                             return fieldTo + piece + "(" + fieldFrom + ")";
                     }
-                    break;
 
                 case "D":
                     return fieldTo + piece + "打";
-                    break; 
                     
                 case "P":
                     if (beating == undefined)
@@ -716,11 +707,8 @@
                         else
                             return fieldTo + piece + "成" + "(" + fieldFrom + ") ";
                     }
-                
-                    break;
             
-                default:
-                    break;
+                default: break;
             }
         }
 
@@ -1857,19 +1845,19 @@
 
                     break;
 
-                default:
-                    break;
+                default: break;
             }
         }
 
         /**
          * Возвращает массив позиций для всех ходов
          *
-         * @param moves_ Массив ходов в формате ($1_$2_$3_$4).
+         * @param moves_ Массив ходов в формате ($1_$2_$3_$4_$5).
          *  $1 — фигура, которая ходит (превращенная фигура обозначается как (фигура)+ ), 
          *  $2 — откуда, 
          *  $3 — куда, 
          *  $4 —  тип хода (N – обычный ход, D – сбрасывание, P – превращение)
+         *  $5 – флаг, если фигура этим ходом съедает фигуру
          * @param startPosition_ Стартовая позиция.
          */
         function movesInSfen(moves_, startPosition_){
@@ -1891,10 +1879,6 @@
 
                 highlightedFields.push([element.split("_")[1], element.split("_")[2]]);
             });  
-            
-			
-            
-          
 
             return [sfens, highlightedFields];
         }
@@ -2104,8 +2088,7 @@
 
                     break;
             
-                default:
-                    break;
+                default: break;
             }
             
             return new_sfen;
@@ -2162,7 +2145,6 @@
             settings['moves'] = readKIF(openFile(settings['KIF']));
             
             let sfenAndHighlightField = movesInSfen(settings["moves"], settings["startPosition"]);
-
             settings["sfens"] = sfenAndHighlightField[0];
             settings["highlightedField"] = sfenAndHighlightField[1];
         
