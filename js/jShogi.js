@@ -2,10 +2,13 @@
  * @author Petr Makhnev <mr.makhneff@gmail.com>
  * @version 0.0.3.5
  */
+'use strict';
+
+// import JPSN from './jpsn-module' !in html
 
 (function ( $ ){
     $(function() {
-        "use strict";
+        
         var settings = {};
         var methods = {
             init : function( options ) { 
@@ -75,8 +78,18 @@
                 if (settings['KIF'] != null)
                     loadKIF();
 
-                if (settings['jPSN'] != null)
-                    load_jPSN();
+                if (settings['jPSN'] != null){
+                    let jpsn = new JPSN(settings['jPSN'])        
+                    jpsn.read()
+                    let jpsnObject = jpsn.getJpsnObject;
+                    let movesAndHighlight = movesInSfen(jpsnObject.moves, jpsnObject.position);
+                    
+                    settings["moves"] = jpsnObject.moves;
+                    settings["sfens"] = movesAndHighlight[0];
+                    settings["highlightedField"] = movesAndHighlight[1];
+
+                    setPosition(settings["sfens"][settings['nowMove']]);
+                }
             }
         };  
 
@@ -94,6 +107,9 @@
             } 
 
         };
+
+
+        
 
         var load_jPSN = () => {
             let shogiProblem = read_jPSN(openFile(settings['jPSN']))[0];
@@ -126,7 +142,7 @@
 
                 result : null
             }
-
+            
             text = text.replace(/[\r\n|\r|\n]/g, "").split("@");
             text.splice(0, 1);
 
@@ -165,92 +181,7 @@
 
 
         
-
-        var moveToReq = (moves) => {
-        
-            var newMoves = [];
-
-            moves.forEach(move => {
-
-                let piece = {
-                    type : null,
-                    isPromote : false,
-                    toPromote : false,
-                    from : null,
-                    to : null
-                }
-
-                if (move[0] == "+") piece.isPromote = true;
-                if (move[6] == "+") piece.toPromote = true;
-
-                if (move[1] == "*"){
-                    piece.type = move[0].toUpperCase();
-                    piece.from = '00';
-                    piece.to = numSymbolToNumNum(move.slice(2, 4));
-                    
-                    newMoves.push(`${piece.type}_${piece.from}_${piece.to}_D`)
-                } 
-
-                if (piece.isPromote){
-                    if (move[4] == "-"){
-                        piece.type = move[0].toUpperCase();
-                        piece.from = numSymbolToNumNum(move.slice(2, 4));
-                        piece.to = numSymbolToNumNum(move.slice(5, 7));
-
-                        newMoves.push(`${piece.type}_${piece.from}_${piece.to}_N`)
-                    }
-
-                    if (move[4] == "x"){
-                        piece.type = move[0].toUpperCase();
-                        piece.from = numSymbolToNumNum(move.slice(2, 4));
-                        piece.to = numSymbolToNumNum(move.slice(5, 7));
-
-                        newMoves.push(`${piece.type}_${piece.from}_${piece.to}_N_B`)
-                    }
-                }
-                else{
-                    if (move[3] == "-"){
-                        piece.type = move[0].toUpperCase();
-                        piece.from = numSymbolToNumNum(move.slice(1, 3));
-                        piece.to = numSymbolToNumNum(move.slice(4, 6));
-
-                        if (piece.toPromote)
-                            newMoves.push(`${piece.type}_${piece.from}_${piece.to}_P`)
-                        else
-                            newMoves.push(`${piece.type}_${piece.from}_${piece.to}_N`)
-                    }
-
-                    if (move[3] == "x"){
-                        piece.type = move[0].toUpperCase();
-                        piece.from = numSymbolToNumNum(move.slice(1, 3));
-                        piece.to = numSymbolToNumNum(move.slice(4, 6));
-
-                         if (piece.toPromote)
-                            newMoves.push(`${piece.type}_${piece.from}_${piece.to}_P_B`)
-                        else
-                            newMoves.push(`${piece.type}_${piece.from}_${piece.to}_N_B`)
-                    }
-                }
-
-            });
-
-            return newMoves;            
-        }
-        var numSymbolToNumNum = (numSymbol) => {
-            switch (numSymbol[1]) {
-                case "a": return numSymbol[0] + "1"; break;
-                case "b": return numSymbol[0] + "2"; break;
-                case "c": return numSymbol[0] + "3"; break;
-                case "d": return numSymbol[0] + "4"; break;
-                case "e": return numSymbol[0] + "5"; break;
-                case "f": return numSymbol[0] + "6"; break;
-                case "g": return numSymbol[0] + "7"; break;
-                case "h": return numSymbol[0] + "8"; break;
-                case "i": return numSymbol[0] + "9"; break;                
-                default: break;
-            }
-        }
-
+      
 
 
 
@@ -288,6 +219,8 @@
         }
        
         /**
+         * 
+         * 
          * Добавляет разметку интерфейса
          *
         */
@@ -424,14 +357,14 @@
             if (flag)
                 removeHighlightFields();
             
-            if (Array.isArray(field)){
+            if (Array.isArray(field))
                 field.forEach(element => {
                     $("#" + element).css({"background-color": settings['colorHighlightFields']});
                 });
-            }
-            else{
+            
+            else
                 $("#" + field).css({"background-color": settings['colorHighlightFields']});
-            }
+            
         }
         var removeHighlightFields = () => $("[class $= Field]").css({"background-color":"#FFF"});
 

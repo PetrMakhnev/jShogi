@@ -12,7 +12,8 @@
 
 @moves:
 1. G2e-2d #comment
-2. s3c-2d #comment
+2. +s3cx2d #comment
 3. L1e-1c+ #comment
+4. p*4e
 
 @result: 0-1
