@@ -1,10 +1,11 @@
 /**
  * @author Petr Makhnev <mr.makhneff@gmail.com>
- * @version 0.0.3.5
+ * @version 0.0.3.7
  */
 'use strict';
 
 // import JPSN from './jpsn-module' !in html
+// import KIF from './kif-module' !in html
 
 (function ( $ ){
     $(function() {
@@ -75,8 +76,20 @@
                 
                 setPosition(settings["sfens"][settings['nowMove']]);
 
-                if (settings['KIF'] != null)
-                    loadKIF();
+                if (settings['KIF'] != null){
+                    let kif = new KIF(settings['KIF'])
+                    kif.read()
+                    let kifObject = kif.getKifObject;
+                    let movesAndHighlight = movesInSfen(kifObject.moves, settings["startPosition"]);
+                    
+                    settings["moves"] = kifObject.moves;
+                    settings["sfens"] = movesAndHighlight[0];
+                    settings["highlightedField"] = movesAndHighlight[1];
+
+                    setPosition(settings["sfens"][settings['nowMove']]);
+					
+                }
+                    
 
                 if (settings['jPSN'] != null){
                     let jpsn = new JPSN(settings['jPSN'])        
@@ -2037,267 +2050,6 @@
         var isNumeric = (n) => !isNaN(parseFloat(n)) && isFinite(n);
         
 
-        // БЛОК ЧТЕНИЯ ФАЙЛОВ //
-
-        // РАБОТА С KIF // 
-
-        /**
-         * Загружает KIF и устанавливает первоначальную позицию
-         */
-        var loadKIF = () => {
         
-            settings['moves'] = readKIF(openFile(settings['KIF']));
-            
-            let sfenAndHighlightField = movesInSfen(settings["moves"], settings["startPosition"]);
-            settings["sfens"] = sfenAndHighlightField[0];
-            settings["highlightedField"] = sfenAndHighlightField[1];
-        
-            if (settings['startMove'] != null) {
-                if (settings['startMove'] <= settings['moves'].length){ 
-                    settings['nowMove'] = settings['startMove'];
-                    setPosition(settings['sfens'][settings['nowMove']]);
-                }
-                else
-                    alert(`Номер хода указан неверно, установлена стартовая позиция!\nВсего ходов: ${settings['moves'].length}`);
-            }
-        }
-
-        /**
-         * Преобразует KIF в массив ходов внутреннего представления
-         *
-         * @param KIF Преобразуемый файл.
-        */
-        var readKIF = (KIF) => {
-            
-            var lines = KIF.split('\n');
-        
-            let startMoveFlag = "数";
-            let startLine = 0;
-            for (let i = 0; lines[i][1] != startMoveFlag; i++)
-                startLine++;
-            
-
-            var information = {};
-            var informationData = lines.slice(0, startLine);
-
-            var isKanji = (str) => !/[а-яa-z]/i.test(str);
-            
-            
-
-            for (let i = 0; i < informationData.length; i++){
-                let el;
-                switch (informationData[i][0]) {
-                    case "開":
-                        information["dataStart"] = {
-                            "day" : informationData[i].replace(/.*：(.*)/, "$1").split(" ")[0],
-                            "time" : informationData[i].replace(/.*：(.*)/, "$1").split(" ")[1]
-                        }
-                        break;
-
-                    case "終":
-                        information["dataEnd"] = {
-                            "day" : informationData[i].replace(/.*：(.*)/, "$1").split(" ")[0],
-                            "time" : informationData[i].replace(/.*：(.*)/, "$1").split(" ")[1]
-                        }
-                        break;
-
-                    case "棋": information["tournament"] = informationData[i].replace(/.*：(.*)/, "$1"); break;
-
-                    case "場": information["place"] = informationData[i].replace(/.*：(.*)/, "$1"); break;
-
-                    case "持": information["timeStamp"] = informationData[i].replace(/.*：(.*)/, "$1"); break;
-
-                    case "手": information["handicap"] = informationData[i].replace(/.*：(.*)/, "$1"); break;
-
-                    case "先":
-                        el = informationData[i].replace(/.*：(.*)/, "$1");
-						
-                        if (isKanji(el)){
-                            information["white"] = {
-                                "name" : informationData[i].replace(/.*：(.*)/, "$1").split(" ")[0],
-                                "rank" : informationData[i].replace(/.*：(.*)/, "$1").split(" ")[1]
-                            };
-                        }
-                        else{
-                            information["white"] = {
-                                "name" : informationData[i].replace(/.*：(.*)/, "$1")
-                            }
-                        }
-                      
-                        break;
-
-                    case "後":
-                        el = informationData[i].replace(/.*：(.*)/, "$1");
-                        if (isKanji(el)){
-                            information["black"] = {
-                                "name" : informationData[i].replace(/.*：(.*)/, "$1").split(" ")[0],
-                                "rank" : informationData[i].replace(/.*：(.*)/, "$1").split(" ")[1]
-                            };
-                        }
-                        else{
-                            information["black"] = {
-                                "name" : informationData[i].replace(/.*：(.*)/, "$1")
-                            }
-                        }
-                        break;
-
-                    case "戦": information["debut"] = informationData[i].replace(/.*：(.*)/, "$1");break;
-                
-                    default: break;
-                }
-            }
-            
-        
-            let moves = lines.slice(startLine + 1);
-		
-            let newMoves = [];
-
-            for (let i = 0; i < moves.length - 1; i++){
-                
-                let moveFull = moves[i];
-                moveFull = moveFull.replace(/^ +/, "");
-                moveFull = moveFull.replace(/ +/g, " ");
-
-                let move = moveFull.split(" ")[1];
-                let newMove = "";
-                
-                let piece;
-                let fieldTo = "";
-                let fieldFrom = "";
-                let type;
-                let flagFieldFrom = true;
-                let beated = "";
-            
-               
-                
-                if (move[0] == "同") {
-                    fieldTo = newMoves[newMoves.length - 1].split("_")[2]; 
-                    beated = "_B";
-                }
-                else 
-                    fieldTo += kanjiToString(move[0]) + kanjiToString(move[1]);
-                
-                if (move[2] == "成") {
-                    piece = "+" + kanjiToString(move[3]);
-                    type = "N";
-                }
-                else {
-                    piece = kanjiToString(move[2]);
-                    type = kanjiToString(move[3]);
-
-                    if (type == "D")
-                        flagFieldFrom = false
-                }
-        
-                if (flagFieldFrom) 
-                    fieldFrom = +move.split("(")[1].split(")")[0];
-                else 
-                    fieldFrom = "00";
-                
-                
-                newMove = piece + "_" + fieldFrom + "_" + fieldTo + "_" + type + beated;
-                
-                newMoves.push(newMove);
-            }
-            
-
-            let $dataStart = $(".dataStart");
-            let $dataEnd = $(".dataEnd");
-            let $tournament = $(".tournament");
-            let $place = $(".place");
-            let $timeStamp = $(".timeStamp");
-            let $handicap = $(".handicap");
-            let $white = $(".whitePlayer");
-            let $black = $(".blackPlayer");
-			console.log("TCL: readKIF -> $black", $black)
-            let $debut = $(".debut");
-			console.log("TCL: readKIF ->  $debut",  $debut)
-            
-            $dataStart.html(information["dataStart"]);
-			console.log("TCL: readKIF -> information", information)
-            $dataEnd.html(information["dataEnd"]);
-            $tournament.html(information["tournament"]);
-            $place.html(information["place"]);
-            $timeStamp.html(information["timeStamp"]);
-            $handicap.html(information["handicap"]);
-            $white.html(information["white"].name);
-            $black.html(information["black"].name);
-            $debut.html(information["debut"]);
-            
-            
-            return newMoves;
-        }
-
-        /**
-         * Вспомогательная функция для чтения KIF
-         * Преобразует иероглифы в ходе в соотвествии с их значением
-         *
-         * @param kanji Преобразуемый иероглиф.
-        */
-        var kanjiToString = (kanji) => {
-            switch (kanji) {
-                case "玉": return("K");
-                case "飛": return("R");
-                case "角": return("B");
-                case "金": return("G");
-                case "銀": return("S");
-                case "桂": return("N");
-                case "香": return("L");
-                case "歩": return("P");
-
-                case "龍": return("+R");
-                case "馬": return("+B");
-                case "と": return("+P");
-
-                case "一": return("1");
-                case "二": return("2");
-                case "三": return("3");
-                case "四": return("4");
-                case "五": return("5");
-                case "六": return("6");
-                case "七": return("7");
-                case "八": return("8");
-                case "九": return("9");
-
-                case "１": return("1");
-                case "２": return("2");
-                case "３": return("3");
-                case "４": return("4");
-                case "５": return("5");
-                case "６": return("6");
-                case "７": return("7");
-                case "８": return("8");
-                case "９": return("9");
-
-                case "　": return("");
-
-                case "打": return("D");
-
-                case "成": return("P");
-
-                default: return("N");
-            }
-        }
-
-        /**
-         * Функция открытия файла
-         *
-         * @param path Путь у файлу.
-         * @return Возвращает данные из файла в виде строки.
-        */
-        var openFile = (path) => {
-       
-            var information;  
-             
-            $.ajax({
-                url: path,
-                dataType: 'text',
-                async: false,
-                success: function(data){
-                    information = data;
-                }
-            });
-            return information;
-        }
     });
 }) (jQuery)

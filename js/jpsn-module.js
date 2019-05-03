@@ -144,6 +144,4 @@ class JPSN {
             default: break;
         }
     }
-
-
 }
