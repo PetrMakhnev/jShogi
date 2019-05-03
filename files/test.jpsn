@@ -1,4 +1,4 @@
-﻿@tsume
+@tsume
 
 @book-jp: 一手詰め一手必死, 2006
 @book-en: Hand in hand, 2006
@@ -8,11 +8,11 @@
 
 @countMoves: 1
 
-@position: "8k/9/7G1/9/9/9/9/9/9 b G"
+@position: 9/9/p1s3s1p/1p5p1/1S4PGL/P1P4P1/9/9/9 b -
 
 @moves:
-1. G*1b #comment
-2. k1a-2a #comment
-3. G1b-2b #comment
+1. G2e-2d #comment
+2. s3c-2d #comment
+3. L1e-1c+ #comment
 
-@result: 1-0
+@result: 0-1

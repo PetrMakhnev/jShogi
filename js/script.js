@@ -11,3 +11,5 @@ $(document).ready(() => {
         //startMove : 25
     });
 });
+
+// 668

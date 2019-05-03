@@ -1,6 +1,6 @@
 /**
  * @author Petr Makhnev <mr.makhneff@gmail.com>
- * @version 0.0.3
+ * @version 0.0.3.5
  */
 
 (function ( $ ){
@@ -96,15 +96,15 @@
         };
 
         var load_jPSN = () => {
-            let shogiProblem = read_jPSN(openFile(settings['jPSN']));
-			console.log("TCL: load_jPSN -> shogiProblem", shogiProblem)
+            let shogiProblem = read_jPSN(openFile(settings['jPSN']))[0];
+            let newPosition = read_jPSN(openFile(settings['jPSN']))[1];
             
-            let movesAndHighlight = movesInSfen(shogiProblem, settings["startPosition"]);
+            let movesAndHighlight = movesInSfen(shogiProblem, newPosition);
 			
             settings["moves"] = shogiProblem;
             settings["sfens"] = movesAndHighlight[0];
             settings["highlightedField"] = movesAndHighlight[1];
-            
+
             setPosition(settings["sfens"][settings['nowMove']]);
         }
 
@@ -132,33 +132,35 @@
 
             for (let i = 0; i < text.length; i++){
                 text[i] = text[i].split(":");
-
+                
                 switch (text[i][0]) {
                     case "tsume": jPSNobject.type = 1; break;
-                    case "book-jp": jPSNobject.bookJP = text[i][1]; break;
-                    case "book-en": jPSNobject.bookEN = text[i][1]; break;
-                    case "author-jp": jPSNobject.authorJP = text[i][1]; break;
-                    case "author-en": jPSNobject.authorEN = text[i][1]; break;
-                    case "countMoves": jPSNobject.countMoves = text[i][1]; break;
-                    case "position": jPSNobject.position = text[i][1]; break;
+                    case "book-jp": jPSNobject.bookJP = text[i][1].replace(/^ /, ""); break;
+                    case "book-en": jPSNobject.bookEN = text[i][1].replace(/^ /, ""); break;
+                    case "author-jp": jPSNobject.authorJP = text[i][1].replace(/^ /, ""); break;
+                    case "author-en": jPSNobject.authorEN = text[i][1].replace(/^ /, ""); break;
+                    case "countMoves": jPSNobject.countMoves = +text[i][1].replace(/^ /, ""); break;
+                    case "position": jPSNobject.position = text[i][1].replace(/^ /, ""); break;
                     case "moves": jPSNobject.moves = text[i][1].replace(/[0-9]. /, "").split(/[0-9]\. /); break;
-                    case "result": jPSNobject.result = text[i][1]; break;
+                    case "result": jPSNobject.result = text[i][1].replace(/^ /, ""); break;
 
                     default:break;
                 }
 
             }
-			
+            
+            
+            
             jPSNobject.moves = jPSNobject.moves.map(element => element.split(" "));
             jPSNobject.comment = jPSNobject.moves.map( element => element[1]);
             jPSNobject.moves = jPSNobject.moves.map( element => element[0]);
             
             var jPSNMoves = moveToReq(jPSNobject.moves);
 
-             console.log("TCL: read_jPSN -> jPSNobject", jPSNobject)
+           
 
-            return jPSNMoves;
-		           
+            return [jPSNMoves, jPSNobject.position];
+            
         }
 
 
@@ -173,11 +175,13 @@
                 let piece = {
                     type : null,
                     isPromote : false,
+                    toPromote : false,
                     from : null,
                     to : null
                 }
 
                 if (move[0] == "+") piece.isPromote = true;
+                if (move[6] == "+") piece.toPromote = true;
 
                 if (move[1] == "*"){
                     piece.type = move[0].toUpperCase();
@@ -210,7 +214,10 @@
                         piece.from = numSymbolToNumNum(move.slice(1, 3));
                         piece.to = numSymbolToNumNum(move.slice(4, 6));
 
-                        newMoves.push(`${piece.type}_${piece.from}_${piece.to}_N`)
+                        if (piece.toPromote)
+                            newMoves.push(`${piece.type}_${piece.from}_${piece.to}_P`)
+                        else
+                            newMoves.push(`${piece.type}_${piece.from}_${piece.to}_N`)
                     }
 
                     if (move[3] == "x"){
@@ -218,7 +225,10 @@
                         piece.from = numSymbolToNumNum(move.slice(1, 3));
                         piece.to = numSymbolToNumNum(move.slice(4, 6));
 
-                        newMoves.push(`${piece.type}_${piece.from}_${piece.to}_N_B`)
+                         if (piece.toPromote)
+                            newMoves.push(`${piece.type}_${piece.from}_${piece.to}_P_B`)
+                        else
+                            newMoves.push(`${piece.type}_${piece.from}_${piece.to}_N_B`)
                     }
                 }
 
@@ -243,17 +253,6 @@
 
 
 
-        
-        var convertJPSN = (moves) => {
-            if (Array.isArray(moves)){
-                moves.forEach(element => {
-
-                });
-            }
-            else{
-
-            }
-        }
 
         var initSettingsStyles = (styleNumber) => {
             
@@ -1942,8 +1941,10 @@
          * @return nfarf Позиция в формате NFARF.
          */
         function SFEN_TO_NFARF(sfen_){ // Not Fully Abbreviated Recording Form
+		
             var nfarf = "";
             var sfen = sfen_.split(" ")[0];
+				
             var nowColor = sfen_.split(" ")[1];
             var sfen_hand = sfen_.split(" ")[2];
 
@@ -1965,6 +1966,7 @@
                     nfarf += sfen_hand[i];
             }
             
+			
             return nfarf;
         }
 
@@ -2438,9 +2440,5 @@
             });
             return information;
         }
-
-
-
-
     });
 }) (jQuery)
